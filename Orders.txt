@@ -1,0 +1,130 @@
+private String jdbcURL = "jdbc:oracle:thin:@localhost:1521:xe";
+		private String jdbcUsername = "system";
+		private String jdbcPassword = "123";
+
+		private static final String INSERT_USERS_SQL = "INSERT INTO order_details VALUES "
+				+ " (seq_users1.NEXTVAL,?, ?, ?)";
+
+		private static final String SELECT_USER_BY_ID = "select order_id,order_date,order_status,c_id from orders where order_details_id =?";
+		private static final String SELECT_ALL_USERS = "select * from orders";
+		private static final String DELETE_USERS_SQL = "delete from orders where order_id = ?";
+		private static final String UPDATE_USERS_SQL = "update orders set order_status = ?,"
+				+ "   where order_id = ?";
+
+		public User1Dao() {
+		}
+
+		protected Connection getConnection() {
+			Connection connection = null;
+			try {
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+				connection = DriverManager.getConnection(jdbcURL, jdbcUsername, 
+						jdbcPassword);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return connection;
+		}
+
+		public void insertUser(Orders order) throws SQLException {
+			System.out.println(INSERT_USERS_SQL);
+			// try-with-resource statement will auto close the connection.
+			try {Connection connection = getConnection();
+					PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL);
+														
+				preparedStatement.setInt(1, order.getorder_id());
+				preparedStatement.setString(2, order.getorder_date());
+				preparedStatement.setString(3, order.getorder_status());
+				preparedStatement.setInt(4, order.getc_id());
+				System.out.println(preparedStatement);
+				preparedStatement.executeUpdate();
+			} catch (SQLException e) {
+				printSQLException(e);
+			}
+		}
+
+		public Orders selectUser(int iid) {
+			Orders user1 = null;
+			// Step 1: Establishing a Connection
+			try {Connection connection = getConnection();
+					// Step 2:Create a statement using connection object
+					PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_ID);
+				preparedStatement.setInt(1, iid);
+				System.out.println(preparedStatement);
+				// Step 3: Execute the query or update query
+				ResultSet rs = preparedStatement.executeQuery();
+
+				// Step 4: Process the ResultSet object.
+				while (rs.next()) {
+					int order_id= rs.getInt("order_id");
+					String order_date = rs.getString("order_date");
+					String order_status = rs.getInt("order_status");
+					int c_id=rs.getInt("c_id");
+					user1 = new Orders(order_id,order_date,order_status,c_id);
+				}
+			} catch (SQLException e) {
+				printSQLException(e);
+			}
+			return user1;
+		}
+
+		public List<Orders> selectAllUsers() {
+
+			// using try-with-resources to avoid closing resources (boiler plate code)
+			List<Orders> users1 = new ArrayList<>();
+			// Step 1: Establishing a Connection
+			try {Connection connection = getConnection();
+
+					// Step 2:Create a statement using connection object
+				PreparedStatement preparedStatement = connection.prepareStatement
+						(SELECT_ALL_USERS);
+				System.out.println(preparedStatement);
+				// Step 3: Execute the query or update query
+				ResultSet rs = preparedStatement.executeQuery();
+
+				// Step 4: Process the ResultSet object.
+				while (rs.next()) {
+					int order_id= rs.getInt("order_id");
+					String order_date = rs.getString("order_date");
+					String order_status = rs.getInt("order_status");
+					int c_id=rs.getInt("c_id");
+					users1.add(new OrderDetails(order_id,order_date,order_status,c_id));
+				}
+			} catch (SQLException e) {
+				printSQLException(e);
+			}
+			return users1;
+		}
+
+		public boolean deleteUser(int order_id) throws SQLException {
+			boolean rowDeleted;
+			try (Connection connection = getConnection();
+					PreparedStatement statement = connection.prepareStatement(DELETE_USERS_SQL);) {
+				statement.setInt(1, order_id);
+				rowDeleted = statement.executeUpdate() > 0;
+			}
+			return rowDeleted;
+		}
+
+		public boolean updateUser(Orders user1) throws SQLException {
+			boolean rowUpdated;
+			try (Connection connection = getConnection();
+					PreparedStatement statement = connection.prepareStatement
+							(UPDATE_USERS_SQL);) {
+				statement.setString(1, order.getString("order_status"));
+				statement.setInt(2, order.getInt("order_id"));
+				rowUpdated = statement.executeUpdate() > 0;
+			}
+			return rowUpdated;
+		}
+
+		private void printSQLException(SQLException ex) {
+			
+					ex.printStackTrace();
+					
+					}
+				
