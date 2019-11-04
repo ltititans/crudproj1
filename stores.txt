@@ -1,0 +1,351 @@
+Skip to content
+
+ 
+  
+Pull requests 
+Issues 
+Marketplace 
+Explore 
+ 
+ 
+ 
+
+
+
+
+package com.lti.DAO;
+
+
+
+
+
+
+
+
+
+	import java.sql.Connection;
+
+
+
+	import java.sql.DriverManager;
+
+	import java.sql.PreparedStatement;
+
+	import java.sql.ResultSet;
+
+	import java.sql.SQLException;
+
+	import java.util.ArrayList;
+
+	import java.util.List;
+
+
+
+import com.lti.books.Stores;
+
+
+
+
+
+	public class StoresDao {
+
+		private String jdbcURL = "jdbc:oracle:thin:@localhost:1521:xe";
+
+		private String jdbcUsername = "system";
+
+		private String jdbcPassword = "123";
+
+
+
+		private static final String INSERT_USERS_SQL = "INSERT INTO stores VALUES "
+
+				+ " (seq_stores.NEXTVAL,?, ?, ?,?)";
+
+
+
+		private static final String SELECT_USER_BY_ID = "select stores_id,address,city,state,zipcode from stores where stores_id =?";
+
+		private static final String SELECT_ALL_USERS = "select * from stores";
+
+		private static final String DELETE_USERS_SQL = "delete from stores where stores_id = ?";
+
+		private static final String UPDATE_USERS_SQL = "update stores set stores_id = ?,"
+
+				+ "address= ?," + "city= ? ,"+"state=? where stores_id= ?";
+
+
+
+		public AuthorDao() {
+
+		}
+
+
+
+		protected Connection getConnection() {
+
+			Connection connection = null;
+
+			try {
+
+				Class.forName("oracle.jdbc.driver.OracleDriver");
+
+				connection = DriverManager.getConnection(jdbcURL, jdbcUsername, 
+
+						jdbcPassword);
+
+			} catch (SQLException e) {
+
+				// TODO Auto-generated catch block
+
+				e.printStackTrace();
+
+			} catch (ClassNotFoundException e) {
+
+				// TODO Auto-generated catch block
+
+				e.printStackTrace();
+
+			}
+
+			return connection;
+
+		}
+
+
+
+		public void insertUser(Publisher publisher) throws SQLException {
+
+			System.out.println(INSERT_USERS_SQL);
+
+			// try-with-resource statement will auto close the connection.
+
+			try {Connection connection = getConnection();
+
+					PreparedStatement preparedStatement = connection.prepareStatement
+
+				preparedStatement.setDouble(1,publisher.getPublisher_code());									(INSERT_USERS_SQL);
+
+				preparedStatement.setString(1, author.getPublisher_name());
+
+				preparedStatement.setString(3, author.getEmail_address());
+
+                               preparedStatement.setString(4,publisher.getWebsite());
+
+				
+
+				System.out.println(preparedStatement);
+
+				preparedStatement.executeUpdate();
+
+			} catch (SQLException e) {
+
+				printSQLException(e);
+
+			}
+
+		}
+
+
+
+		public Publisher selectUser(int publisher_id) {
+
+			Publisher publisher= null;
+
+			// Step 1: Establishing a Connection
+
+			try {Connection connection = getConnection();
+
+					// Step 2:Create a statement using connection object
+
+					PreparedStatement preparedStatement = connection.prepareStatement
+
+														(SELECT_USER_BY_ID);
+
+				preparedStatement.setInt(1, publisher_id);
+
+				System.out.println(preparedStatement);
+
+				// Step 3: Execute the query or update query
+
+				ResultSet rs = preparedStatement.executeQuery();
+
+
+
+				// Step 4: Process the ResultSet object.
+
+				while (rs.next()) {
+
+                                      double publisher_code=rs.getDouble("publisher_code");
+
+					String name = rs.getString("publisher_name");
+
+					
+
+					String email_address = rs.getString("email_address");
+
+                                         String website = rs.getString("website");
+
+					
+
+					
+
+					publisher = new Publisher(publisher_id, publisher_code,publisher_name, email_address,website);
+
+				}
+
+			} catch (SQLException e) {
+
+				printSQLException(e);
+
+			}
+
+			return author;
+
+		}
+
++
+
+		public List<Publisher> selectAllUsers() {
+
+
+
+			// using try-with-resources to avoid closing resources (boiler plate code)
+
+			List<Publisher> publisherlist = new ArrayList<>();
+
+			// Step 1: Establishing a Connection
+
+			try {Connection connection = getConnection();
+
+
+
+					// Step 2:Create a statement using connection object
+
+				PreparedStatement preparedStatement = connection.prepareStatement
+
+						(SELECT_ALL_USERS);
+
+				System.out.println(preparedStatement);
+
+				// Step 3: Execute the query or update query
+
+				ResultSet rs = preparedStatement.executeQuery();
+
+
+
+				// Step 4: Process the ResultSet object.
+
+				while (rs.next()) {
+
+					 double publisher_code=rs.getDouble("publisher_code");
+
+					int publisher_id = rs.getInt("publisher_id");
+
+                                       
+
+					String name = rs.getString("publisher_name");
+
+					
+
+					String email_address = rs.getString("email_address");
+
+                                         String website = rs.getString("website");
+
+					
+
+				
+
+					publisherlist.add(new Publisher(publisher_code,publisher_id, publisher_name,email_address,website));
+
+				}
+
+			} catch (SQLException e) {
+
+				printSQLException(e);
+
+			}
+
+			return publisherlist;
+
+		}
+
+
+
+		public boolean deleteUser(int publisher_id) throws SQLException {
+
+			boolean rowDeleted;
+
+			try (Connection connection = getConnection();
+
+					PreparedStatement statement = connection.prepareStatement
+
+													(DELETE_USERS_SQL);) {
+
+				statement.setInt(1, publisher_id);
+
+				rowDeleted = statement.executeUpdate() > 0;
+
+			}
+
+			return rowDeleted;
+
+		}
+
+
+
+		public boolean updateUser(Publisher publisher) throws SQLException {
+
+			boolean rowUpdated;
+
+			try (Connection connection = getConnection();
+
+					PreparedStatement preparedStatement = connection.prepareStatement
+
+							(UPDATE_USERS_SQL);) {
+
+                            
+
+
+
+				preparedStatement.setDouble(1,publisher.getPublisher_code());									(INSERT_USERS_SQL);
+
+				preparedStatement.setString(1, author.getPublisher_name());
+
+				preparedStatement.setString(3, author.getEmail_address());
+
+                               preparedStatement.setString(4,publisher.getWebsite());
+
+				preparedStatement.setInt(5, publisher.getPublisher_id());
+
+
+
+				rowUpdated = preparedstatement.executeUpdate() > 0;
+
+			}
+
+			return rowUpdated;
+
+		}
+
+
+
+		private void printSQLException(SQLException ex) {
+
+			
+
+					ex.printStackTrace();
+
+					
+
+					}
+
+				
+
+	}
+
+
+
+
+
+
+
